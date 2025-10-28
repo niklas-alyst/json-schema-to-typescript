@@ -161,6 +161,27 @@ rules.set('Remove maxItems if it is big enough to likely cause OOMs', (schema, _
   }
 })
 
+// NOTE: https://json-schema.org/draft/2020-12#introduction
+//
+// Keywords for Applying Subschemas to Arrays
+// https://json-schema.org/draft/2019-09/draft-handrews-json-schema-02#rfc.section.9.3.1
+// https://json-schema.org/draft/2020-12/json-schema-core#section-10.3.1
+rules.set('Support the `prefixItems` key from draft 2020-12', schema => {
+  if (!isArrayType(schema)) {
+    return
+  }
+
+  if (schema.hasOwnProperty('prefixItems')) {
+    if (schema.hasOwnProperty('items')) {
+      schema.additionalItems = schema.items as any
+      delete schema.items
+    }
+
+    schema.items = schema.prefixItems as any
+    delete schema.prefixItems
+  }
+})
+
 rules.set('Normalize schema.items', (schema, _fileName, options) => {
   if (options.ignoreMinAndMaxItems) {
     return
